@@ -60,11 +60,11 @@ public partial class Main : Control
     private readonly List<string> _logs = [];
     private const int MaxLogs = 7;
 
-    private Rect2 _topPanel = Rect2.Zero;
-    private Rect2 _logPanel = Rect2.Zero;
-    private Rect2 _boardRect = Rect2.Zero;
-    private Rect2 _deckSlotRect = Rect2.Zero;
-    private Rect2 _weaponSlotRect = Rect2.Zero;
+    private Rect2 _topPanel = new(0f, 0f, 0f, 0f);
+    private Rect2 _logPanel = new(0f, 0f, 0f, 0f);
+    private Rect2 _boardRect = new(0f, 0f, 0f, 0f);
+    private Rect2 _deckSlotRect = new(0f, 0f, 0f, 0f);
+    private Rect2 _weaponSlotRect = new(0f, 0f, 0f, 0f);
     private readonly Rect2[] _roomSlotRects = new Rect2[4];
     private Vector2 _cardSize = new(122f, 180f);
 
