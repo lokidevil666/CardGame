@@ -21,13 +21,37 @@ Esta pasta contem uma versao do jogo refeita em **Godot 4 com C#**.
 
 ## Como abrir
 
-1. Instala Godot 4 com suporte C#.
-2. Abre a pasta `godot_scoundrel` no Godot.
-3. Corre a cena principal.
+1. Instala **Godot .NET 4.2.x** (nao usar build standard sem C#).
+2. Instala **.NET SDK 6.0**.
+3. Abre a pasta `godot_scoundrel` no Godot.
+4. Se o editor pedir, aceita criar/restaurar a solucao C#.
+5. Corre a cena principal.
 
 Cena principal:
 
 - `res://scenes/Main.tscn`
+
+## Troubleshooting rapido
+
+Se nao iniciar, verifica:
+
+1. **Godot certo**  
+   No titulo da app deve aparecer `.NET` (ex.: `Godot_v4.2.x-stable_mono`).
+
+2. **SDK dotnet instalado**  
+   No terminal:
+
+   ```bash
+   dotnet --list-sdks
+   ```
+
+   Deve aparecer uma linha `6.0.x`.
+
+3. **Abriste a pasta correta**  
+   Abre `.../godot_scoundrel` (nao a raiz do repositorio).
+
+4. **Rebuild da solucao C#**  
+   No Godot: `Project -> Tools -> C# -> Create C# Solution` (se necessario) e depois `Build`.
 
 ## Controlos
 
