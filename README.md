@@ -2,6 +2,14 @@
 
 Jogo de cartas em Python/Pygame com regras oficiais de **Scoundrel**.
 
+## Versao Godot 4 + C#
+
+Tambem existe uma versao refeita em Godot:
+
+- pasta: `godot_scoundrel/`
+- cena principal: `res://scenes/Main.tscn`
+- detalhes: `godot_scoundrel/README.md`
+
 ## Regras (Scoundrel oficial)
 
 - Setup original:
