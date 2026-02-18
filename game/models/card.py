@@ -20,6 +20,8 @@ class Card:
 
     @property
     def value(self) -> int:
+        if self.rank == 1:
+            return 14
         return self.rank
 
     @property

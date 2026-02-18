@@ -1,24 +1,28 @@
 # Scoundrel Roguelike (Pygame)
 
-Jogo de cartas em Python/Pygame inspirado no conceito de Scoundrel, com estrutura roguelike.
+Jogo de cartas em Python/Pygame com regras oficiais de **Scoundrel**.
 
-## Regras usadas
+## Regras (Scoundrel oficial)
 
-- Baralho normal de 52 cartas.
-- Espadas e paus sao criaturas.
-- Copas sao pocoes de cura.
-- Ouros sao espadas para defesa.
-- Objetivo: sobreviver ate acabar o baralho.
+- Setup original:
+  - remover jokers, ases vermelhos e figuras vermelhas (copas/ouros A, J, Q, K)
+  - vida inicial: 20
+- Paus e espadas = monstros (A=14, J=11, Q=12, K=13)
+- Copas = pocoes (so podes usar 1 por sala)
+- Ouros = armas (arma nova substitui a antiga)
+- Cada sala tem 4 cartas:
+  - podes **evitar** a sala (nao podes evitar duas seguidas)
+  - se nao evitares, escolhes 3 cartas e deixas 1 para a sala seguinte
+- Combate com arma:
+  - dano recebido = `max(0, monstro - arma)`
+  - depois de usar arma num monstro, ela so pode ser usada em monstros com valor menor/igual ao ultimo abatido com arma
 
 ## Interacao das cartas
 
 - Hover do rato: carta sobe e aumenta ligeiramente.
 - Click: carta executa animacao curta e resolve acao.
 - Cada click bloqueia input por um instante para animacao de resolucao.
-- As cartas usam imagens (`assets/cards`) e um icone central por tipo:
-  - `monster.png` para espadas/paus
-  - `potion.png` para copas
-  - `weapon.png` para ouros
+- Cartas com visual pixel art e icones por tipo (`assets/icons`).
 
 ## Como correr
 
@@ -26,12 +30,12 @@ Jogo de cartas em Python/Pygame inspirado no conceito de Scoundrel, com estrutur
 python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
-python main.py
+python3 main.py
 ```
 
-## Regenerar imagens (opcional)
+## Regenerar assets pixel art (opcional)
 
-Se quiseres refazer os PNGs do baralho/icone:
+Se quiseres refazer os icones:
 
 ```bash
 python3 scripts/generate_assets.py
@@ -39,13 +43,19 @@ python3 scripts/generate_assets.py
 
 ## Controlos
 
-- `ENTER` ou click no botao para iniciar.
-- `ESC` no combate para voltar ao menu.
-- `R` para reiniciar run.
-- No ecras final:
-  - `R` nova run
-  - `M` menu
-  - `ESC` sair
+- Menu:
+  - escreve seed (opcional)
+  - `ENTER` inicia run
+  - `CTRL+C` copia seed do campo
+- Combate:
+  - `A` evita sala (quando permitido)
+  - click esquerdo em monstro = tenta usar arma
+  - click direito em monstro = luta de mao nua
+  - `C` copia seed atual
+  - `R` reinicia com mesma seed
+  - `ESC` volta ao menu
+- Global:
+  - `F11` alterna fullscreen
 
 ## Estrutura
 
@@ -67,7 +77,6 @@ game/
     combat_scene.py
     end_scene.py
 assets/
-  cards/ (52 png)
   icons/ (monster, potion, weapon)
 scripts/
   generate_assets.py

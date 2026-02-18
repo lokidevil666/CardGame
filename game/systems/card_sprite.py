@@ -73,8 +73,8 @@ class CardSprite:
     def draw(
         self,
         surface: pygame.Surface,
-        body_font: pygame.font.Font,
-        small_font: pygame.font.Font,
+        title_font: pygame.font.Font,
+        detail_font: pygame.font.Font,
         enabled: bool,
         assets: "GameAssets",
     ) -> None:
@@ -85,15 +85,10 @@ class CardSprite:
         card_image = assets.get_card_face(self.card, (rect.width, rect.height))
         surface.blit(card_image, rect)
 
-        icon_size = int(min(rect.width * 0.40, rect.height * 0.28))
+        icon_size = int(min(rect.width * 0.50, rect.height * 0.34))
         icon_surface = assets.get_type_icon(self.card.card_type, (icon_size, icon_size))
-        icon_rect = icon_surface.get_rect(center=(rect.centerx, rect.centery + 16))
+        icon_rect = icon_surface.get_rect(center=(rect.centerx, rect.centery + 4))
         surface.blit(icon_surface, icon_rect)
-
-        label_bg = pygame.Rect(0, 0, rect.width - 22, 50)
-        label_bg.midbottom = (rect.centerx, rect.bottom - 14)
-        pygame.draw.rect(surface, (246, 249, 255), label_bg, border_radius=10)
-        pygame.draw.rect(surface, (31, 36, 52), label_bg, width=2, border_radius=10)
 
         if self.card.card_type == "monster":
             desc = "Monstro"
@@ -106,14 +101,24 @@ class CardSprite:
         else:
             desc = "Espada"
             desc_color = (54, 86, 154)
-            detail = f"Poder {self.card.value}"
+            detail = f"Ataque {self.card.value}"
 
-        desc_label = body_font.render(desc, True, desc_color)
-        desc_rect = desc_label.get_rect(midtop=(label_bg.centerx, label_bg.top + 3))
+        top_tag = pygame.Rect(0, 0, rect.width - 20, 30)
+        top_tag.midtop = (rect.centerx, rect.top + 10)
+        pygame.draw.rect(surface, (242, 245, 253), top_tag, border_radius=8)
+        pygame.draw.rect(surface, (35, 41, 58), top_tag, width=2, border_radius=8)
+
+        desc_label = title_font.render(desc.upper(), True, desc_color)
+        desc_rect = desc_label.get_rect(center=top_tag.center)
         surface.blit(desc_label, desc_rect)
 
-        detail_label = small_font.render(detail, True, (25, 29, 40))
-        detail_rect = detail_label.get_rect(midbottom=(label_bg.centerx, label_bg.bottom - 5))
+        detail_bg = pygame.Rect(0, 0, rect.width - 20, 34)
+        detail_bg.midbottom = (rect.centerx, rect.bottom - 12)
+        pygame.draw.rect(surface, (245, 249, 255), detail_bg, border_radius=8)
+        pygame.draw.rect(surface, (31, 36, 52), detail_bg, width=2, border_radius=8)
+
+        detail_label = detail_font.render(detail, True, (23, 28, 42))
+        detail_rect = detail_label.get_rect(center=detail_bg.center)
         surface.blit(detail_label, detail_rect)
 
         pygame.draw.rect(surface, (16, 21, 34), rect, width=3, border_radius=16)
