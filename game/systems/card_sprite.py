@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import TYPE_CHECKING
 
 import pygame
 
-from game.constants import CARD_COLORS, CARD_HEIGHT, CARD_WIDTH, TEXT_COLOR
+from game.constants import CARD_HEIGHT, CARD_WIDTH
 from game.models.card import Card
+
+if TYPE_CHECKING:
+    from game.systems.assets import GameAssets
 
 
 def _lerp(current: float, target: float, speed: float, dt: float) -> float:
@@ -69,42 +73,55 @@ class CardSprite:
     def draw(
         self,
         surface: pygame.Surface,
-        title_font: pygame.font.Font,
         body_font: pygame.font.Font,
         small_font: pygame.font.Font,
         enabled: bool,
+        assets: "GameAssets",
     ) -> None:
         rect = self._rect_for_draw()
 
-        color = CARD_COLORS[self.card.card_type]
-        if self.hovered and enabled:
-            color = tuple(min(255, channel + 25) for channel in color)
-        if not enabled:
-            color = tuple(max(50, channel - 30) for channel in color)
-
         shadow_rect = rect.move(0, 8)
         pygame.draw.rect(surface, (8, 10, 15), shadow_rect, border_radius=16)
-        pygame.draw.rect(surface, color, rect, border_radius=16)
-        pygame.draw.rect(surface, (16, 17, 24), rect, width=3, border_radius=16)
+        card_image = assets.get_card_face(self.card, (rect.width, rect.height))
+        surface.blit(card_image, rect)
 
-        short_label = title_font.render(self.card.short_name, True, TEXT_COLOR)
-        short_label_rect = short_label.get_rect(midtop=(rect.centerx, rect.top + 18))
-        surface.blit(short_label, short_label_rect)
+        icon_size = int(min(rect.width * 0.40, rect.height * 0.28))
+        icon_surface = assets.get_type_icon(self.card.card_type, (icon_size, icon_size))
+        icon_rect = icon_surface.get_rect(center=(rect.centerx, rect.centery + 16))
+        surface.blit(icon_surface, icon_rect)
 
-        type_label = body_font.render(self.card.card_type.upper(), True, TEXT_COLOR)
-        type_label_rect = type_label.get_rect(center=(rect.centerx, rect.centery - 6))
-        surface.blit(type_label, type_label_rect)
-
-        value_label = title_font.render(str(self.card.value), True, TEXT_COLOR)
-        value_label_rect = value_label.get_rect(center=(rect.centerx, rect.centery + 42))
-        surface.blit(value_label, value_label_rect)
+        label_bg = pygame.Rect(0, 0, rect.width - 22, 50)
+        label_bg.midbottom = (rect.centerx, rect.bottom - 14)
+        pygame.draw.rect(surface, (246, 249, 255), label_bg, border_radius=10)
+        pygame.draw.rect(surface, (31, 36, 52), label_bg, width=2, border_radius=10)
 
         if self.card.card_type == "monster":
-            desc = "Dano base"
+            desc = "Monstro"
+            desc_color = (140, 45, 60)
+            detail = f"Dano {self.card.value}"
         elif self.card.card_type == "potion":
-            desc = "Cura HP"
+            desc = "Pocao"
+            desc_color = (38, 125, 82)
+            detail = f"Cura {self.card.value}"
         else:
-            desc = "Poder da espada"
-        desc_label = small_font.render(desc, True, TEXT_COLOR)
-        desc_rect = desc_label.get_rect(midbottom=(rect.centerx, rect.bottom - 14))
+            desc = "Espada"
+            desc_color = (54, 86, 154)
+            detail = f"Poder {self.card.value}"
+
+        desc_label = body_font.render(desc, True, desc_color)
+        desc_rect = desc_label.get_rect(midtop=(label_bg.centerx, label_bg.top + 3))
         surface.blit(desc_label, desc_rect)
+
+        detail_label = small_font.render(detail, True, (25, 29, 40))
+        detail_rect = detail_label.get_rect(midbottom=(label_bg.centerx, label_bg.bottom - 5))
+        surface.blit(detail_label, detail_rect)
+
+        pygame.draw.rect(surface, (16, 21, 34), rect, width=3, border_radius=16)
+        if self.hovered and enabled:
+            glow_rect = rect.inflate(8, 8)
+            pygame.draw.rect(surface, (133, 193, 255), glow_rect, width=3, border_radius=18)
+
+        if not enabled:
+            overlay = pygame.Surface((rect.width, rect.height), pygame.SRCALPHA)
+            overlay.fill((18, 21, 31, 120))
+            surface.blit(overlay, rect)

@@ -224,10 +224,10 @@ class CombatScene(BaseScene):
         for sprite in draw_order:
             sprite.draw(
                 surface,
-                title_font=self.app.title_font,
                 body_font=self.app.body_font,
                 small_font=self.app.small_font,
                 enabled=enabled and (not sprite.is_resolving),
+                assets=self.app.assets,
             )
 
     def _draw_logs(self, surface: pygame.Surface) -> None:

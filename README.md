@@ -15,6 +15,10 @@ Jogo de cartas em Python/Pygame inspirado no conceito de Scoundrel, com estrutur
 - Hover do rato: carta sobe e aumenta ligeiramente.
 - Click: carta executa animacao curta e resolve acao.
 - Cada click bloqueia input por um instante para animacao de resolucao.
+- As cartas usam imagens (`assets/cards`) e um icone central por tipo:
+  - `monster.png` para espadas/paus
+  - `potion.png` para copas
+  - `weapon.png` para ouros
 
 ## Como correr
 
@@ -23,6 +27,14 @@ python -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
 python main.py
+```
+
+## Regenerar imagens (opcional)
+
+Se quiseres refazer os PNGs do baralho/icone:
+
+```bash
+python3 scripts/generate_assets.py
 ```
 
 ## Controlos
@@ -47,10 +59,16 @@ game/
     deck.py
     player.py
   systems/
+    assets.py
     card_sprite.py
   scenes/
     base_scene.py
     menu_scene.py
     combat_scene.py
     end_scene.py
+assets/
+  cards/ (52 png)
+  icons/ (monster, potion, weapon)
+scripts/
+  generate_assets.py
 ```

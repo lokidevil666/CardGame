@@ -7,6 +7,7 @@ from game.scenes.base_scene import BaseScene
 from game.scenes.combat_scene import CombatScene
 from game.scenes.end_scene import EndScene
 from game.scenes.menu_scene import MenuScene
+from game.systems.assets import GameAssets
 
 
 class GameApp:
@@ -21,6 +22,7 @@ class GameApp:
         self.title_font = pygame.font.SysFont("arial", 40, bold=True)
         self.body_font = pygame.font.SysFont("arial", 28)
         self.small_font = pygame.font.SysFont("arial", 22)
+        self.assets = GameAssets()
 
         self.scene: BaseScene = MenuScene(self)
 
