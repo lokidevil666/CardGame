@@ -24,6 +24,9 @@ TYPE_LABELS = {
     "weapon": "ESPADA",
 }
 
+BASE_CARD_SIZE = (420, 620)
+BASE_ICON_SIZE = (320, 320)
+
 
 class GameAssets:
     def __init__(self) -> None:
@@ -32,44 +35,42 @@ class GameAssets:
         self.cards_dir = assets_root / "cards"
         self.icons_dir = assets_root / "icons"
 
-        self._card_cache: dict[tuple[str, int, tuple[int, int]], pygame.Surface] = {}
-        self._icon_cache: dict[tuple[str, tuple[int, int]], pygame.Surface] = {}
+        self._card_sources: dict[tuple[str, int], pygame.Surface] = {}
+        self._icon_sources: dict[str, pygame.Surface] = {}
         self._fallback_font = pygame.font.SysFont("arial", 34, bold=True)
         self._fallback_small_font = pygame.font.SysFont("arial", 24, bold=True)
 
     def get_card_face(self, card: "Card", size: tuple[int, int]) -> pygame.Surface:
-        key = (card.suit, card.rank, size)
-        if key in self._card_cache:
-            return self._card_cache[key]
+        source_key = (card.suit, card.rank)
+        if source_key not in self._card_sources:
+            image_path = self.cards_dir / f"{card.suit}_{card.rank}.png"
+            image = self._load_image(image_path)
+            if image is None:
+                image = self._build_fallback_card(card, BASE_CARD_SIZE)
+            self._card_sources[source_key] = image
 
-        image_path = self.cards_dir / f"{card.suit}_{card.rank}.png"
-        image = self._load_image(image_path, size)
-        if image is None:
-            image = self._build_fallback_card(card, size)
-
-        self._card_cache[key] = image
-        return image
+        source = self._card_sources[source_key]
+        if source.get_size() == size:
+            return source
+        return pygame.transform.smoothscale(source, size)
 
     def get_type_icon(self, card_type: str, size: tuple[int, int]) -> pygame.Surface:
-        key = (card_type, size)
-        if key in self._icon_cache:
-            return self._icon_cache[key]
+        if card_type not in self._icon_sources:
+            image_path = self.icons_dir / f"{card_type}.png"
+            image = self._load_image(image_path)
+            if image is None:
+                image = self._build_fallback_icon(card_type, BASE_ICON_SIZE)
+            self._icon_sources[card_type] = image
 
-        image_path = self.icons_dir / f"{card_type}.png"
-        image = self._load_image(image_path, size)
-        if image is None:
-            image = self._build_fallback_icon(card_type, size)
+        source = self._icon_sources[card_type]
+        if source.get_size() == size:
+            return source
+        return pygame.transform.smoothscale(source, size)
 
-        self._icon_cache[key] = image
-        return image
-
-    def _load_image(self, path: Path, size: tuple[int, int]) -> pygame.Surface | None:
+    def _load_image(self, path: Path) -> pygame.Surface | None:
         if not path.exists():
             return None
-        image = pygame.image.load(path.as_posix()).convert_alpha()
-        if image.get_size() != size:
-            image = pygame.transform.smoothscale(image, size)
-        return image
+        return pygame.image.load(path.as_posix()).convert_alpha()
 
     def _build_fallback_card(self, card: "Card", size: tuple[int, int]) -> pygame.Surface:
         surface = pygame.Surface(size, pygame.SRCALPHA)
