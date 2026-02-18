@@ -71,7 +71,9 @@ class CombatScene(BaseScene):
             drawn = self.deck.draw()
             if drawn is None:
                 break
-            self.card_sprites.append(CardSprite(card=drawn, center_x=0.0, center_y=0.0))
+            self.card_sprites.append(
+                CardSprite(card=drawn, center_x=0.0, center_y=0.0, entry_pending=True)
+            )
 
     def _begin_room_actions(self) -> None:
         self.cards_taken_this_room = 0
@@ -124,6 +126,7 @@ class CombatScene(BaseScene):
             slot.center = (int(start_x + index * (card_w + gap)), int(row_y))
             self.room_slot_rects.append(slot)
 
+        pending_counter = 0
         for index, sprite in enumerate(self.card_sprites):
             slot_index = min(index, len(self.room_slot_rects) - 1)
             slot = self.room_slot_rects[slot_index]
@@ -131,6 +134,19 @@ class CombatScene(BaseScene):
             sprite.center_y = slot.centery
             sprite.width = card_w
             sprite.height = card_h
+            if sprite.entry_pending:
+                sprite.start_slide_from(
+                    self.deck_slot_rect.centerx,
+                    self.deck_slot_rect.centery,
+                    delay=0.07 * pending_counter,
+                    duration=0.28,
+                )
+                pending_counter += 1
+            elif not sprite.is_sliding and sprite.draw_x is None:
+                sprite.snap_to_target()
+
+    def _is_deal_animation_active(self) -> bool:
+        return any(sprite.is_sliding or sprite.entry_pending for sprite in self.card_sprites)
 
     def _can_avoid_room(self) -> bool:
         return (
@@ -138,6 +154,7 @@ class CombatScene(BaseScene):
             and not self.room_started
             and not self.avoided_last_room
             and self.resolve_timer <= 0
+            and not self._is_deal_animation_active()
         )
 
     @staticmethod
@@ -306,14 +323,14 @@ class CombatScene(BaseScene):
 
         if event.type != pygame.MOUSEBUTTONDOWN or event.button not in (1, 3):
             return
-        if self.resolve_timer > 0 or self.player.hp <= 0:
-            return
 
         if event.button == 1 and self.copy_seed_rect.collidepoint(event.pos):
             self._copy_seed()
             return
         if event.button == 1 and self.avoid_button_rect.collidepoint(event.pos):
             self._avoid_room()
+            return
+        if self.resolve_timer > 0 or self.player.hp <= 0 or self._is_deal_animation_active():
             return
 
         for sprite in reversed(self.card_sprites):
@@ -331,7 +348,11 @@ class CombatScene(BaseScene):
     def update(self, dt: float) -> None:
         self._layout_ui()
         mouse_pos = pygame.mouse.get_pos()
-        can_interact = self.resolve_timer <= 0 and self.player.hp > 0
+        can_interact = (
+            self.resolve_timer <= 0
+            and self.player.hp > 0
+            and not self._is_deal_animation_active()
+        )
 
         for sprite in self.card_sprites:
             sprite_can_interact = can_interact and (not sprite.is_resolving)

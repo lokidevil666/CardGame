@@ -31,15 +31,55 @@ class CardSprite:
     hovered: bool = False
     is_resolving: bool = False
     click_timer: float = 0.0
+    draw_x: float | None = None
+    draw_y: float | None = None
+    slide_from_x: float = 0.0
+    slide_from_y: float = 0.0
+    slide_elapsed: float = 0.0
+    slide_delay: float = 0.0
+    slide_duration: float = 0.32
+    is_sliding: bool = False
+    entry_pending: bool = False
+
+    def snap_to_target(self) -> None:
+        self.draw_x = self.center_x
+        self.draw_y = self.center_y
+        self.is_sliding = False
+        self.entry_pending = False
+
+    def start_slide_from(
+        self,
+        start_x: float,
+        start_y: float,
+        *,
+        delay: float = 0.0,
+        duration: float = 0.32,
+    ) -> None:
+        self.draw_x = start_x
+        self.draw_y = start_y
+        self.slide_from_x = start_x
+        self.slide_from_y = start_y
+        self.slide_delay = max(0.0, delay)
+        self.slide_duration = max(0.05, duration)
+        self.slide_elapsed = 0.0
+        self.is_sliding = True
+        self.entry_pending = False
+
+    def _slide_value(self, current: float, start: float, target: float, t: float) -> float:
+        _ = current
+        eased = 1.0 - (1.0 - t) ** 3
+        return start + (target - start) * eased
 
     def _rect_for_draw(self) -> pygame.Rect:
         click_scale = 0.92 if self.click_timer > 0.10 else 1.0
         final_scale = self.scale * click_scale
         draw_w = int(self.width * final_scale)
         draw_h = int(self.height * final_scale)
-        center_y = int(self.center_y - self.lift)
+        current_x = self.center_x if self.draw_x is None else self.draw_x
+        current_y = self.center_y if self.draw_y is None else self.draw_y
+        center_y = int(current_y - self.lift)
         return pygame.Rect(
-            int(self.center_x - draw_w / 2),
+            int(current_x - draw_w / 2),
             int(center_y - draw_h / 2),
             draw_w,
             draw_h,
@@ -47,14 +87,38 @@ class CardSprite:
 
     @property
     def interaction_rect(self) -> pygame.Rect:
+        current_x = self.center_x if self.draw_x is None else self.draw_x
+        current_y = self.center_y if self.draw_y is None else self.draw_y
         return pygame.Rect(
-            int(self.center_x - self.width / 2),
-            int(self.center_y - self.height / 2),
+            int(current_x - self.width / 2),
+            int(current_y - self.height / 2),
             self.width,
             self.height,
         )
 
     def update(self, dt: float, mouse_pos: tuple[int, int], can_interact: bool) -> None:
+        if self.draw_x is None or self.draw_y is None:
+            self.draw_x = self.center_x
+            self.draw_y = self.center_y
+
+        if self.is_sliding:
+            self.slide_elapsed += dt
+            effective = self.slide_elapsed - self.slide_delay
+            if effective <= 0:
+                self.draw_x = self.slide_from_x
+                self.draw_y = self.slide_from_y
+            else:
+                t = min(1.0, effective / self.slide_duration)
+                self.draw_x = self._slide_value(self.draw_x, self.slide_from_x, self.center_x, t)
+                self.draw_y = self._slide_value(self.draw_y, self.slide_from_y, self.center_y, t)
+                if t >= 1.0:
+                    self.is_sliding = False
+                    self.draw_x = self.center_x
+                    self.draw_y = self.center_y
+        else:
+            self.draw_x = self.center_x
+            self.draw_y = self.center_y
+
         self.hovered = can_interact and self.interaction_rect.collidepoint(mouse_pos)
         target_scale = self.base_scale * (1.08 if self.hovered else 1.0)
         target_lift = 18.0 if self.hovered else 0.0
